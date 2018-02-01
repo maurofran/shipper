@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	pb "github.com/maurofran/shipper/consignment-service/proto/consignment"
+	vp "github.com/maurofran/shipper/vessel-service/proto/vessel"
 	micro "github.com/micro/go-micro"
 	"golang.org/x/net/context"
 )
@@ -33,10 +35,21 @@ func (r *repository) GetAll() []*pb.Consignment {
 }
 
 type service struct {
-	repository Repository
+	repository   Repository
+	vesselClient vp.VesselServiceClient
 }
 
 func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment, res *pb.Response) error {
+	vesselResponse, err := s.vesselClient.FindAvailable(ctx, &vp.Specification{
+		MaxWeight: req.Weight,
+		Capacity:  int32(len(req.Containers)),
+	})
+	log.Printf("Found vessel: %s\n", vesselResponse.Vessel.Name)
+	if err != nil {
+		return err
+	}
+	req.VesselId = vesselResponse.Vessel.Id
+
 	consignment, err := s.repository.Create(req)
 	if err != nil {
 		return err
