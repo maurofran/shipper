@@ -13,6 +13,6 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /go/src/github.com/maurofran/shipper/consignment-service/consignment-service .
+COPY --from=builder /go/src/github.com/maurofran/shipper/vessel-service/vessel-service .
 
-CMD [ "./consignment-service" ]
+CMD [ "./vessel-service" ]
